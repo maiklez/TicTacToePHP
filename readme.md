@@ -1,10 +1,14 @@
-
+<h1>
 <p align="center">
 Tic Tac Toe
 </p>
+</h1>
+## Source code
+The source code can be found in the HomeController
+
 
 ## Response
-
+Example JSON Response
 {
   "matchId": "5a5c6f9b4d749d008e07e695",
   "boardState": [
@@ -25,6 +29,9 @@ Tic Tac Toe
 
 
 ## Request
+{} to start new game.
+
+Example JSON Request
 {
   "matchId": "5a5c6f9b4d749d008e07e695",
   "boardState": [

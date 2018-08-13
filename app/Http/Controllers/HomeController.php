@@ -2,40 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests;
 use Illuminate\Http\Request;
-
-use Maiklez\MaikBlog\Models\Post;
-use Maiklez\MaikBlog\Models\Category;
-use Maiklez\MaikBlog\Models\Tag;
-
-use Mail;
-use Auth;
-use App\Models\Preguntas\Preguntas;
-use App\Models\Ventas\Producto;
-use App\Models\Ventas\Suscripcion;
-use App\Models\Preguntas\Materia;
-use Illuminate\Foundation\Auth\ThrottlesLogins;
-use Illuminate\Auth\Events\Registered;
-use App\User;
-use App\Http\Controllers\Admin\User\PagosController;
-use Carbon\Carbon;
-
-/** All Paypal Details class **/
-use PayPal\Rest\ApiContext;
-use PayPal\Auth\OAuthTokenCredential;
-use PayPal\Api\Amount;
-use PayPal\Api\Details;
-use PayPal\Api\Item;
-use PayPal\Api\ItemList;
-use PayPal\Api\Payer;
-use PayPal\Api\Payment;
-use PayPal\Api\RedirectUrls;
-use PayPal\Api\ExecutePayment;
-use PayPal\Api\PaymentExecution;
-use PayPal\Api\Transaction;
-
-use App\Models\PDF;
 
 class HomeController extends Controller
 {
@@ -151,6 +118,13 @@ class HomeController extends Controller
     	
     	return response()->json($this->getResponse($matchId, $boardState, $history, $winner));    	
     }
+	/**
+	 * @param unknown $matchId
+	 * @param unknown $boardState
+	 * @param string $history
+	 * @param string $winner
+	 * @return Ambigous <unknown, string>
+	 */
 	private function getResponse($matchId, $boardState, $history=null, $winner=false){
 		$salida['matchId'] = $matchId;
 		$salida['boardState'] = $boardState;
@@ -162,16 +136,31 @@ class HomeController extends Controller
 		
 		return $salida;
 	}
+    /**
+     * @param unknown $board
+     * @param unknown $history
+     * @param unknown $move
+     */
     private function move(&$board, &$history, $move){
     	array_push($history, $move);
     	$board[$move['position']]=$move['char'];
     }
     
+    /**
+     * @param unknown $char
+     * @return string
+     */
     private function getTheOtherChar($char){
     	$otherchar = $char==='x'?'o':'x';
     	return $otherchar;
     }
     
+    /**
+     * @param unknown $board
+     * @param unknown $n_movement
+     * @param unknown $char
+     * @return Ambigous <number, boolean, unknown>|Ambigous <unknown, \App\Http\Controllers\unknown, boolean>
+     */
     private function getMyBestMoveIStart($board, $n_movement, $char){
 
     	$bestMove['char']=$char;
@@ -228,6 +217,10 @@ class HomeController extends Controller
     	return $bestMove;
     }
     
+    /**
+     * @param unknown $board
+     * @return unknown|boolean
+     */
     private function getFreeCell($board){
     	foreach ($board as $key=>$cell){
     		if($cell===HomeController::FREE_CELL) return $key;
@@ -235,6 +228,10 @@ class HomeController extends Controller
     	return false;
     }
     
+    /**
+     * @param unknown $board
+     * @return unknown|boolean
+     */
     private function getFreeBorder($board){
     	foreach (HomeController::BORDER as $border){
     		if($board[$border]===HomeController::FREE_CELL) return $border;
@@ -242,6 +239,10 @@ class HomeController extends Controller
     	return false;
     }
     
+    /**
+     * @param unknown $board
+     * @return unknown|boolean
+     */
     private function getFreeCorner($board){
     	foreach (HomeController::CORNERS as $corner){
     		if($board[$corner]===HomeController::FREE_CELL) return $corner;
@@ -249,6 +250,12 @@ class HomeController extends Controller
     	return false;
     }
     
+    /**
+     * @param unknown $board
+     * @param unknown $n_movement
+     * @param unknown $char
+     * @return Ambigous <number, boolean, unknown>|Ambigous <unknown, boolean>
+     */
     private function getMyBestMoveYouStart($board, $n_movement, $char){
     	 
     	$bestMove['char']=$char;
@@ -297,12 +304,23 @@ class HomeController extends Controller
     	return $bestMove;
     }
     
+    /**
+     * @param unknown $board
+     * @param unknown $char
+     * @return boolean
+     */
     private function isInBorder($board, $char){
     	foreach (HomeController::BORDER as $border){
     		if($board[$border]===$char) return true;
     	}
     	return false;
     }
+    
+    /**
+     * @param unknown $board
+     * @param unknown $char
+     * @return boolean
+     */
     private function isInCorner($board, $char){
     	foreach (HomeController::CORNERS as $corner){
     		if($board[$corner]===$char) return true;
@@ -310,7 +328,11 @@ class HomeController extends Controller
     	return false;
     }
     
-    //false or the position number
+    /**
+     * @param unknown $board
+     * @param unknown $char
+     * @return int|boolean
+     */
     private function canFinish($board, $char){    	
     	$winRow = $this->getWinningRow($board, $char);
     	if($winRow){
@@ -322,6 +344,11 @@ class HomeController extends Controller
     	return false;
     }
     
+    /**
+     * @param unknown $board
+     * @param unknown $char
+     * @return unknown|boolean
+     */
     private function getWinningRow($board, $char){    	    	
     	foreach (HomeController::WINNING_ROWS as $keyrow => $winrow){
     		$n_chars=0;
@@ -336,6 +363,12 @@ class HomeController extends Controller
     	return false;
     }
     
+    /**
+     * @param unknown $board
+     * @param unknown $nextMove
+     * @param unknown $history
+     * @return string|boolean
+     */
     private function logicValidations($board, $nextMove, $history){
     	//- is finish match?
     	//if there are winner or boardState is complete
@@ -360,6 +393,10 @@ class HomeController extends Controller
     	return true;
     }
     
+    /**
+     * @param unknown $board
+     * @return unknown|boolean
+     */
     private function isAWinner($board){
     	foreach (HomeController::WINNING_ROWS as $rowkey => $row){
     		if($board[$row[0]]===$board[$row[1]] 
@@ -372,6 +409,10 @@ class HomeController extends Controller
     	return false;
     }
     
+    /**
+     * @param unknown $board
+     * @return boolean
+     */
     private function isBoardComplete($board){
     	foreach ($board as $cell){
     		if($cell==='-'){
@@ -381,6 +422,11 @@ class HomeController extends Controller
     	return true;
     }
     
+    /**
+     * isFirstMovement
+     * @param array $board
+     * @return boolean true if is first movement
+     */
     private function isFirstMovement($board){    	
     	foreach ($board as $cell){
     		if($cell==='x' || $cell==='o'){
@@ -410,7 +456,7 @@ class HomeController extends Controller
     	try{
     		$keyDecoded = decrypt($request->key);
     	} catch (\DecryptException $e) {
-    		return response()->json( $this->getError(HomeController::INVALID_KEY_ID));
+    		return HomeController::INVALID_KEY_ID;
     	}
     	
     	if($matchId!==$keyDecoded['matchId']){
@@ -448,9 +494,10 @@ class HomeController extends Controller
     	return true;
     }
     
-    //"nextMove":{"char":"x","position":8}
-    //remove last move from history
     
+    /**
+     * @return an array with the data response
+     */
     private function getNewGame(){
     	$matchId=time()  . $this->uniqidReal();    	
     	$boardState = HomeController::NEW_BOARD;
@@ -475,12 +522,21 @@ class HomeController extends Controller
     	return $this->getResponse($matchId, $boardState, $history);
     }
     
+    /**
+     * @param unknown $message
+     * @return boolean
+     */
     private function getError($message){
     	$error['error'] = true;
     	$error['message'] = $message;
     	return $error;
     }
     
+    /**
+     * @param number $lenght
+     * @throws \Exception
+     * @return string
+     */
     private function uniqidReal($lenght = 14) {
     	// uniqid gives 13 chars, but you could adjust it to your needs.
     	if (function_exists("random_bytes")) {

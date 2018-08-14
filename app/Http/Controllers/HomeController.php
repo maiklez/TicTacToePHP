@@ -47,7 +47,7 @@ class HomeController extends Controller
     
     /**
      * play to TicTacToe
-     *
+     *	API call - Request -> Validate Entry -> Move -> if not finish - BotMove -> Response
      * @param  Request  $request
      * @return Response
      */
@@ -75,12 +75,16 @@ class HomeController extends Controller
     	
     	$next_move=$request->nextMove;
     	$history = is_null($request->history)?[]:$request->history;
+    	 
+    	if(isset($next_move['undo'])){
+    		$this->undo($boardState, $history);
+    		return response()->json($this->getResponse($matchId, $boardState, $history));
+    	}
     	
     	$validations = $this->logicValidations($boardState, $next_move, $history);
     	if($validations!==true){
     		return response()->json( $this->getError($validations) );
     	}
-    	    	
     	//Move
     	$this->move($boardState, $history, $next_move);    	
     	    	
@@ -89,7 +93,7 @@ class HomeController extends Controller
     	}
     	$winner =  $this->isAWinner($boardState);
     	if($winner){
-    		
+    		return response()->json($this->getResponse($matchId, $boardState, $history, $winner));
     	}
     	
     	$mychar = $this->getTheOtherChar($next_move['char']);    	
@@ -119,15 +123,18 @@ class HomeController extends Controller
     	return response()->json($this->getResponse($matchId, $boardState, $history, $winner));    	
     }
 	/**
-	 * @param unknown $matchId
-	 * @param unknown $boardState
-	 * @param string $history
-	 * @param string $winner
-	 * @return Ambigous <unknown, string>
+	 *  Makes the response to the API.
+	 *  
+	 * @param string $matchId
+	 * @param array $boardState
+	 * @param array $history (optional)
+	 * @param string $winner (optional)
+	 * @return array
 	 */
 	private function getResponse($matchId, $boardState, $history=null, $winner=false){
 		$salida['matchId'] = $matchId;
 		$salida['boardState'] = $boardState;
+		$salida['nextMove'] = null;
 		if(!is_null($history)) $salida['history']=$history;
 		$cript = $salida;
 		$salida['key'] =  encrypt($cript);
@@ -136,10 +143,30 @@ class HomeController extends Controller
 		
 		return $salida;
 	}
+	
+	/**
+	 *  Removes the last move from the bot and the last move from the player
+	 *
+	 * @param array $board
+	 * @param array $history
+	 */
+	private function undo(&$board, &$history){
+		//undo one movement
+		$move = array_pop($history);
+		//dump($move);
+		$board[$move['position']]=HomeController::FREE_CELL;
+		
+		//undo second movement
+		$move = array_pop($history);
+		$board[$move['position']]=HomeController::FREE_CELL;
+	}
+	
     /**
-     * @param unknown $board
-     * @param unknown $history
-     * @param unknown $move
+     *  Move a char in the board
+     *  
+     * @param array $board
+     * @param array $history
+     * @param array $move
      */
     private function move(&$board, &$history, $move){
     	array_push($history, $move);
@@ -147,7 +174,9 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $char
+     * Finds the opposite char (player)  - Return 'o' or 'x'
+     * 
+     * @param string $char
      * @return string
      */
     private function getTheOtherChar($char){
@@ -156,10 +185,13 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @param unknown $n_movement
-     * @param unknown $char
-     * @return Ambigous <number, boolean, unknown>|Ambigous <unknown, \App\Http\Controllers\unknown, boolean>
+     * Finds the best move for the char in that number of movements if this char start the game. 
+     * Return a move['char'] and move['position']
+     * 
+     * @param array $board
+     * @param int $n_movement
+     * @param string $char
+     * @return array move['char'] and move['position']
      */
     private function getMyBestMoveIStart($board, $n_movement, $char){
 
@@ -218,8 +250,10 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @return unknown|boolean
+     *  Finds an empty cell.  - Return cell position or false
+     *  
+     * @param array $board
+     * @return int|boolean
      */
     private function getFreeCell($board){
     	foreach ($board as $key=>$cell){
@@ -229,8 +263,10 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @return unknown|boolean
+     * Finds an empty cell in the border.  - Return cell position or false
+     * 
+     * @param array $board
+     * @return int|boolean
      */
     private function getFreeBorder($board){
     	foreach (HomeController::BORDER as $border){
@@ -240,8 +276,10 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @return unknown|boolean
+     * Finds an empty cell in the corner.  - Return cell position or false
+     * 
+     * @param array $board
+     * @return int|boolean
      */
     private function getFreeCorner($board){
     	foreach (HomeController::CORNERS as $corner){
@@ -251,10 +289,13 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @param unknown $n_movement
-     * @param unknown $char
-     * @return Ambigous <number, boolean, unknown>|Ambigous <unknown, boolean>
+     * Finds the best move for the char in that number of movements if the other char start the game. 
+     * Return a move['char'] and move['position']
+     * 
+     * @param array $board
+     * @param int $n_movement
+     * @param string $char
+     * @return array move['char'] and move['position']
      */
     private function getMyBestMoveYouStart($board, $n_movement, $char){
     	 
@@ -305,6 +346,8 @@ class HomeController extends Controller
     }
     
     /**
+     *  Finds if there are a char in the border.  - Return true or false
+     *  
      * @param unknown $board
      * @param unknown $char
      * @return boolean
@@ -317,6 +360,8 @@ class HomeController extends Controller
     }
     
     /**
+     *  Finds if there are a char in a corner.  - Return true or false
+     *  
      * @param unknown $board
      * @param unknown $char
      * @return boolean
@@ -329,8 +374,11 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @param unknown $char
+     * Finds if the player char can win in the next turn. 
+     * Return false or the cell position where you can win.
+     * 
+     * @param array $board
+     * @param string $char
      * @return int|boolean
      */
     private function canFinish($board, $char){    	
@@ -345,9 +393,12 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @param unknown $char
-     * @return unknown|boolean
+     * Finds if there are some chance to win for the char player. 
+     * If there are a row with two equal chars and an empty cell. Return the row key of WINNING_ROWS or false.
+     * 
+     * @param array $board
+     * @param string $char
+     * @return int|boolean
      */
     private function getWinningRow($board, $char){    	    	
     	foreach (HomeController::WINNING_ROWS as $keyrow => $winrow){
@@ -364,9 +415,11 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @param unknown $nextMove
-     * @param unknown $history
+     * Validate the input movement in the board.  - Return true or error
+     * 
+     * @param array $board
+     * @param array $nextMove
+     * @param array $history
      * @return string|boolean
      */
     private function logicValidations($board, $nextMove, $history){
@@ -394,8 +447,10 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
-     * @return unknown|boolean
+     * Finds if the board has a winner
+     * Return the row key in WINNING_ROWS
+     * @param array $board
+     * @return int|boolean
      */
     private function isAWinner($board){
     	foreach (HomeController::WINNING_ROWS as $rowkey => $row){
@@ -410,7 +465,9 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $board
+     *  Finds if the board is full. No empty cells
+     *  
+     * @param array $board
      * @return boolean
      */
     private function isBoardComplete($board){
@@ -423,7 +480,8 @@ class HomeController extends Controller
     }
     
     /**
-     * isFirstMovement
+     * Finds if it is the first movement. The board is empty.
+     * 
      * @param array $board
      * @return boolean true if is first movement
      */
@@ -436,6 +494,12 @@ class HomeController extends Controller
     	return true;
     }
     
+    /**
+     * Validate mandatory fields
+     * 
+     * @param Request $request
+     * @return string|boolean
+     */
     private function inputValidations($request){
     	
     	$validator = validator($request->all(), [
@@ -443,13 +507,15 @@ class HomeController extends Controller
     			'boardState' => 'required|array|size:9',
     			'key' => 'required|string',
     			'nextMove' => 'required',
-    			'nextMove.char' => 'required|size:1',
-    			'nextMove.position' => 'required|integer',
+    			'nextMove.char' => 'required_without:nextMove.undo|size:1',
+    			'nextMove.position' => 'required_without:nextMove.undo|integer',
+    			'nextMove.undo'	=> 'required_without:nextMove.char|boolean|in:1',
     	]);
     	
     	if ($validator->fails()) {
     		return HomeController::INVALID_PAYLOAD;
     	}
+    	
     	//validate keys
     	$matchId=$request->matchId;
 		
@@ -479,6 +545,13 @@ class HomeController extends Controller
     	return true;
     }
     
+    /**
+     * Validate de history input
+     * 
+     * @param Request $request
+     * @param string $keyDecoded
+     * @return string|boolean
+     */
     private function historyValidations($request, $keyDecoded){
     	$second_validator = validator($request->all(), [    			
     			'history' => 'required|array',    			
@@ -496,6 +569,8 @@ class HomeController extends Controller
     
     
     /**
+     * Generate a new game
+     * 
      * @return an array with the data response
      */
     private function getNewGame(){
@@ -523,7 +598,9 @@ class HomeController extends Controller
     }
     
     /**
-     * @param unknown $message
+     * Generate an error to return in a json response
+     * 
+     * @param string $message
      * @return boolean
      */
     private function getError($message){
@@ -533,6 +610,8 @@ class HomeController extends Controller
     }
     
     /**
+     * Generate a unique id string
+     * 
      * @param number $lenght
      * @throws \Exception
      * @return string
@@ -549,6 +628,11 @@ class HomeController extends Controller
     	return substr(bin2hex($bytes), 0, $lenght);
     }
 	
+    /**
+     * Generate a randon boolean - Return true or false
+     * 
+     * @return boolean
+     */
     private function getRandomBool(){
     	if (function_exists("random_int")) {
     		$bool = (bool)random_int(0, 1);

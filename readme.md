@@ -60,19 +60,21 @@ The movements are based on that study of the tic tac toe: http://www.cs.jhu.edu/
 If I start the most probabilistic chance to win is starting from the corner. On the other side, if the opponent start, if he start in the corner I will put on the center, otherwise in a corner.
 
 * Si empiezo yo: 
-        Mov 1 - esquina - 0
+        
+		Mov 1 - esquina - 0
 
   		Mov 2 - si el otro en el centro -> esquina opuesta a la anterior - 8
                 si no -> en cualquier otra esquina, con un espacio vacío entre ambas - 2,6  ---> el otro en [1,2,5,8] --> yo 6
                                                                                                  el otro en [3,6,7]   --> yo 2
-        Mov 3 - Puedo ganar? si --> gana y Fin partida
+       		Mov 3 - Puedo ganar? si --> gana y Fin partida
 				Puedo perder? si --> no pierdas!
                               no --> jugó centro? si --> a la otra esquina  (la que queda)
                                                   no --> a la otra esquina con dos filas ganadoras (quedan dos esquinas)
 
 
 * Si empieza el otro:
-        Mov 1
+        
+		Mov 1
         - Fue al centro? -> yo a la esquina (0)
         - Fue a una esquina? -> yo al centro - (4)
         - Fue lateral -> yo al centro - (4)
@@ -91,7 +93,7 @@ If I start the most probabilistic chance to win is starting from the corner. On 
                         no --> A la fila ganadora libre
 
 
-Cualquier Mov 4
+		Cualquier Mov 4
         - Puedo ganar? si --> gana
         - Puedo perder? si --> no pierdas! 
 	

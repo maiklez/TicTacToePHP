@@ -504,9 +504,9 @@ class HomeController extends Controller
     	$history=null;
     	
     	//who start?
-    	if((bool)random_int(0, 1)){
+    	if($this->getRandomBool()){
     		//I start
-    		if((bool)random_int(0, 1)){
+    		if($this->getRandomBool()){
     			$char = 'o';
     		}else{
     			$char = 'x';
@@ -538,7 +538,7 @@ class HomeController extends Controller
      * @return string
      */
     private function uniqidReal($lenght = 14) {
-    	// uniqid gives 13 chars, but you could adjust it to your needs.
+    	// uniqid gives 14 chars, but you could adjust it to your needs.
     	if (function_exists("random_bytes")) {
     		$bytes = random_bytes(ceil($lenght / 2));
     	} elseif (function_exists("openssl_random_pseudo_bytes")) {
@@ -548,5 +548,15 @@ class HomeController extends Controller
     	}
     	return substr(bin2hex($bytes), 0, $lenght);
     }
-    
+	
+    private function getRandomBool(){
+    	if (function_exists("random_int")) {
+    		$bool = (bool)random_int(0, 1);
+    	} elseif (function_exists("openssl_random_pseudo_bytes")) {
+    		$bool = ord(openssl_random_pseudo_bytes(1)) >= 0x80;
+    	} else {
+    		$bool = rand(0,1) == 1;
+    	}
+    	return $bool;
+    } 
 }

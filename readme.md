@@ -50,8 +50,6 @@ This is the human specification of the previous payload:
 
 
 ## Algorithm for machine moves
-http://www.cs.jhu.edu/~jorgev/cs106/ttt.pdf
-https://es.wikihow.com/ganar-jugando-tres-en-raya
 
 We have two diferent strategies. We are going to make diferences if I start the game or if the other player start the game.
 
@@ -59,45 +57,45 @@ The movements are based on that study of the tic tac toe: http://www.cs.jhu.edu/
 
 If I start the most probabilistic chance to win is starting from the corner. On the other side, if the opponent start, if he start in the corner I will put on the center, otherwise in a corner.
 
-* Si empiezo yo: 
+* If I start: 
         
-		Mov 1 - esquina - 0
+		Mov 1 - corner - 0
 
-  		Mov 2 - si el otro en el centro -> esquina opuesta a la anterior - 8
-                si no -> en cualquier otra esquina, con un espacio vacío entre ambas - 2,6  ---> el otro en [1,2,5,8] --> yo 6
-                                                                                                 el otro en [3,6,7]   --> yo 2
+  		Mov 2 - if the other in center -> to the other corner outside - 8
+                if not -> any other corner, with white space in the middle - 2,6  ---> the other in [1,2,5,8] --> I goes to 6
+                                                                                                 the other in [3,6,7]   --> I goes to 2
        		
-		Mov 3 - Puedo ganar? si --> gana y Fin partida
-				Puedo perder? si --> no pierdas!
-                              no --> jugó centro? si --> a la otra esquina  (la que queda)
-                                                  no --> a la otra esquina con dos filas ganadoras (quedan dos esquinas)
+		Mov 3 - can I win? yes --> win and end
+				can I loose? yes --> dont loose!
+                              no --> played in center? yes --> the other corner
+                                                  no --> corner with 2 winner rows
 
 
-* Si empieza el otro:
+* If You Start:
         
 		Mov 1
-        - Fue al centro? -> yo a la esquina (0)
-        - Fue a una esquina? -> yo al centro - (4)
-        - Fue lateral -> yo al centro - (4)
+        - Played to center? -> I goes to corner (0)
+        - Played to the corner? -> I goes to center - (4)
+        - Played to the border? -> I goes to center - (4)
 
    		Mov 2
-        - Puedo perder? si --> no pierdas!                            
-						no --> (Estoy en el centro) 
-                               El está en esquinas  --> a un borde (1, 3, 5, 7) --> no perder
-                               El está en laterales --> a una esquina (0,2,6,8) --> ganar
-                               El está en esquina y lateral --> cualquier sitio vacio --> no perder
+        - can I loose? si --> dont loose!                            
+						no --> (I'm in the center) 
+                               He is in corners  --> to border (1, 3, 5, 7) --> dont loose
+                               He is in borders -->to corner (0,2,6,8) --> try win
+                               He is in border and corner --> empty place --> dont loose
 
         
  	  	Mov 3
-        - Puedo ganar? si --> gana
-        - Puedo perder? si --> no pierdas!
-                        no --> A la fila ganadora libre
+        - can I win? yes --> win
+        - can Iloose? yes --> dont loose!
+                        no --> to winner row
 
 
 
-	Cualquier Mov 4
-        - Puedo ganar? si --> gana
-        - Puedo perder? si --> no pierdas! 
+	Any Mov 4
+        - can I win? yes --> win
+        - can I loose? yes --> dont loose! 
 	
 
 ## Relevant methods.

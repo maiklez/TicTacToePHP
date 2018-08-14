@@ -66,7 +66,8 @@ If I start the most probabilistic chance to win is starting from the corner. On 
   		Mov 2 - si el otro en el centro -> esquina opuesta a la anterior - 8
                 si no -> en cualquier otra esquina, con un espacio vacío entre ambas - 2,6  ---> el otro en [1,2,5,8] --> yo 6
                                                                                                  el otro en [3,6,7]   --> yo 2
-       		Mov 3 - Puedo ganar? si --> gana y Fin partida
+       		
+		Mov 3 - Puedo ganar? si --> gana y Fin partida
 				Puedo perder? si --> no pierdas!
                               no --> jugó centro? si --> a la otra esquina  (la que queda)
                                                   no --> a la otra esquina con dos filas ganadoras (quedan dos esquinas)
@@ -93,7 +94,8 @@ If I start the most probabilistic chance to win is starting from the corner. On 
                         no --> A la fila ganadora libre
 
 
-		Cualquier Mov 4
+
+	Cualquier Mov 4
         - Puedo ganar? si --> gana
         - Puedo perder? si --> no pierdas! 
 	
